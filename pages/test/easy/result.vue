@@ -2,7 +2,7 @@
   <div class="mx-7">
     <div class="d-flex justify-center">
       <v-card variant="tonal" class="mt-5">
-        <h1 class="text-center mt-3 mx-4">마음EASY 선별 검사</h1>
+        <h1 class="mt-3 mx-4">마음EASY 선별 검사 결과</h1>
 
         <br />
 
@@ -11,7 +11,7 @@
             ><v-icon>mdi-share-variant</v-icon> 공유하기</v-btn
           >
           <v-btn variant="tonal" @click="saveAsPdf"
-            ><v-icon>mdi-download</v-icon> 저장하기</v-btn
+            ><v-icon>mdi-download</v-icon> 다운로드</v-btn
           >
         </div>
       </v-card>
@@ -22,37 +22,23 @@
     <div id="main">
       <v-card-title>학생 기본 정보</v-card-title>
 
-      <table class="header-table mb-2">
-        <thead>
-          <tr>
-            <th>학번</th>
-            <th>이름</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>{{ studentId }}</td>
-            <td>{{ name }}</td>
-          </tr>
-        </tbody>
-      </table>
-
       <table class="header-table">
         <thead>
           <tr>
+            <th>학년</th>
             <th>성별</th>
             <th>검사완료일</th>
           </tr>
         </thead>
         <tbody>
           <tr>
+            <td>{{ studentGrade }}</td>
             <td>{{ gender === "boy" ? "남자" : "여자" }}</td>
             <td>{{ date }}</td>
           </tr>
         </tbody>
       </table>
 
-      <br />
       <br />
       <br />
 
@@ -76,7 +62,7 @@
             <td>{{ getCategoryByTotalScore(gender, totalScore) }}</td>
           </tr>
           <tr>
-            <td colspan="5" class="text-left">
+            <td colspan="5" class="text-left text-justify">
               {{
                 reading["종합점수"][getCategoryByTotalScore(gender, totalScore)]
               }}
@@ -87,261 +73,123 @@
 
       <br />
       <br />
-      <br />
 
       <v-card-title>하위요인 프로파일</v-card-title>
 
-      <div id="myChart"></div>
+      <div style="display: none" id="myChart"></div>
+      <v-img :src="chartImage" alt="chart" class="w-full my-5" />
 
       <v-table class="responsive-table">
-        <thead>
-          <tr>
-            <th>하위요인</th>
-            <th>구분</th>
-            <th>T점수</th>
-            <th>백분위</th>
-            <th>해석</th>
-          </tr>
-        </thead>
         <tbody>
-          <tr>
-            <td>불안 및 우울 문제</td>
-            <td>
-              {{
-                categoryByTScore(
-                  convertScoreToTScore(
-                    "불안 및 우울 문제",
-                    gender,
-                    JSON.parse(scores)["불안 및 우울 문제"]
-                  )
-                )
-              }}
-            </td>
-            <td>
-              {{
-                convertScoreToTScore(
-                  "불안 및 우울 문제",
-                  gender,
-                  JSON.parse(scores)["불안 및 우울 문제"]
-                )
-              }}
-            </td>
-            <td>
-              {{
-                convertScoreToPercentage(
-                  "불안 및 우울 문제",
-                  gender,
-                  JSON.parse(scores)["불안 및 우울 문제"]
-                )
-              }}
-            </td>
-            <td class="text-justify">
-              {{
-                reading["불안 및 우울 문제"][
+          <div
+            v-for="scoreKey in [
+              '불안 및 우울 문제',
+              '자살 및 위기 문제',
+              '외현화 문제',
+              '심리외상 문제',
+              '학교생활적응 문제',
+            ]"
+            :key="scoreKey"
+          >
+            <tr>
+              <td>{{ scoreKey }}</td>
+              <td>
+                {{
                   categoryByTScore(
                     convertScoreToTScore(
-                      "불안 및 우울 문제",
+                      scoreKey,
                       gender,
-                      JSON.parse(scores)["불안 및 우울 문제"]
+                      JSON.parse(scores)[scoreKey]
                     )
                   )
-                ]
-              }}
-            </td>
-          </tr>
-          <tr>
-            <td>자살 및 위기 문제</td>
-            <td>
-              {{
-                categoryByTScore(
+                }}
+              </td>
+              <td>
+                {{
                   convertScoreToTScore(
-                    "자살 및 위기 문제",
+                    scoreKey,
                     gender,
-                    JSON.parse(scores)["자살 및 위기 문제"]
+                    JSON.parse(scores)[scoreKey]
                   )
-                )
-              }}
-            </td>
-            <td>
-              {{
-                convertScoreToTScore(
-                  "자살 및 위기 문제",
-                  gender,
-                  JSON.parse(scores)["자살 및 위기 문제"]
-                )
-              }}
-            </td>
-            <td>
-              {{
-                convertScoreToPercentage(
-                  "자살 및 위기 문제",
-                  gender,
-                  JSON.parse(scores)["자살 및 위기 문제"]
-                )
-              }}
-            </td>
-            <td class="text-justify">
-              {{
-                reading["자살 및 위기 문제"][
-                  categoryByTScore(
-                    convertScoreToTScore(
-                      "자살 및 위기 문제",
-                      gender,
-                      JSON.parse(scores)["자살 및 위기 문제"]
-                    )
-                  )
-                ]
-              }}
-            </td>
-          </tr>
-          <tr>
-            <td>외현화 문제</td>
-            <td>
-              {{
-                categoryByTScore(
-                  convertScoreToTScore(
-                    "외현화 문제",
+                }}
+              </td>
+              <td>
+                {{
+                  convertScoreToPercentage(
+                    scoreKey,
                     gender,
-                    JSON.parse(scores)["외현화 문제"]
+                    JSON.parse(scores)[scoreKey]
                   )
-                )
-              }}
-            </td>
-            <td>
-              {{
-                convertScoreToTScore(
-                  "외현화 문제",
-                  gender,
-                  JSON.parse(scores)["외현화 문제"]
-                )
-              }}
-            </td>
-            <td>
-              {{
-                convertScoreToPercentage(
-                  "외현화 문제",
-                  gender,
-                  JSON.parse(scores)["외현화 문제"]
-                )
-              }}
-            </td>
-            <td class="text-justify">
-              {{
-                reading["외현화 문제"][
-                  categoryByTScore(
-                    convertScoreToTScore(
-                      "외현화 문제",
-                      gender,
-                      JSON.parse(scores)["외현화 문제"]
+                }}
+              </td>
+            </tr>
+            <tr>
+              <td colspan="4" class="text-justify">
+                <strong>해석:</strong>
+                {{
+                  reading[scoreKey][
+                    categoryByTScore(
+                      convertScoreToTScore(
+                        scoreKey,
+                        gender,
+                        JSON.parse(scores)[scoreKey]
+                      )
                     )
-                  )
-                ]
-              }}
-            </td>
-          </tr>
-          <tr>
-            <td>심리외상 문제</td>
-            <td>
-              {{
-                categoryByTScore(
-                  convertScoreToTScore(
-                    "심리외상 문제",
-                    gender,
-                    JSON.parse(scores)["심리외상 문제"]
-                  )
-                )
-              }}
-            </td>
-            <td>
-              {{
-                convertScoreToTScore(
-                  "심리외상 문제",
-                  gender,
-                  JSON.parse(scores)["심리외상 문제"]
-                )
-              }}
-            </td>
-            <td>
-              {{
-                convertScoreToPercentage(
-                  "심리외상 문제",
-                  gender,
-                  JSON.parse(scores)["심리외상 문제"]
-                )
-              }}
-            </td>
-            <td class="text-justify">
-              {{
-                reading["심리외상 문제"][
-                  categoryByTScore(
-                    convertScoreToTScore(
-                      "심리외상 문제",
-                      gender,
-                      JSON.parse(scores)["심리외상 문제"]
-                    )
-                  )
-                ]
-              }}
-            </td>
-          </tr>
-          <tr>
-            <td>학교생활적응 문제</td>
-            <td>
-              {{
-                categoryByTScore(
-                  convertScoreToTScore(
-                    "학교생활적응 문제",
-                    gender,
-                    JSON.parse(scores)["학교생활적응 문제"]
-                  )
-                )
-              }}
-            </td>
-            <td>
-              {{
-                convertScoreToTScore(
-                  "학교생활적응 문제",
-                  gender,
-                  JSON.parse(scores)["학교생활적응 문제"]
-                )
-              }}
-            </td>
-            <td>
-              {{
-                convertScoreToPercentage(
-                  "학교생활적응 문제",
-                  gender,
-                  JSON.parse(scores)["학교생활적응 문제"]
-                )
-              }}
-            </td>
-            <td class="text-justify">
-              {{
-                reading["학교생활적응 문제"][
-                  categoryByTScore(
-                    convertScoreToTScore(
-                      "학교생활적응 문제",
-                      gender,
-                      JSON.parse(scores)["학교생활적응 문제"]
-                    )
-                  )
-                ]
-              }}
-            </td>
-          </tr>
+                  ]
+                }}
+              </td>
+            </tr>
+          </div>
         </tbody>
       </v-table>
     </div>
+
+    <v-dialog v-model="taa" fullscreen>
+      <v-card>
+        <div
+          class="text-justify ma-5 pa-6 rounded-lg"
+          style="border: 1px solid black"
+        >
+          - 우선관심군이 나오면 상담받아야 합니다. ...
+
+          <br />
+          <br />
+
+          <p v-if="!timerFinished">남은 시간: {{ timeLeft }}초</p>
+          <p v-else>체크박스를 활성화할 수 있습니다.</p>
+
+          <v-checkbox
+            v-model="agreed"
+            :disabled="!timerFinished"
+            label="나는 안내를 다 읽었다"
+          ></v-checkbox>
+
+          <v-btn
+            :disabled="!agreed || !timerFinished"
+            @click="taa = false"
+            variant="tonal"
+            block
+          >
+            시작하기
+          </v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script setup>
 import { onMounted } from "vue";
-import html2pdf from "html2pdf.js";
 import Plotly from "plotly.js-dist-min";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 const route = useRoute();
-const { gender, totalScore, scores, date, studentId, name } = route.query;
+const { gender, totalScore, scores, date, studentGrade, name } = route.query;
+const taa = ref(true);
+const agreed = ref(false);
+const timerFinished = ref(false);
+const timeLeft = ref(5);
 
 const reading = {
   종합점수: {
@@ -401,6 +249,8 @@ const types = ref([
   "학교생활적응 문제",
 ]);
 
+const chartImage = ref("");
+
 function share() {
   navigator.share({
     title: "마음EASY 선별 검사 결과",
@@ -409,29 +259,97 @@ function share() {
   });
 }
 
-function saveAsPdf() {
-  const doc = new jsPDF();
-  const source = window.document.getElementById("main");
-  doc.html(source, {
-    callback: function (doc) {
-      doc.save("마음EASY 선별 검사 결과지.pdf");
-    },
-    x: 10,
-    y: 10,
-    width: 180,
+async function saveAsPdf() {
+  const captureElement = document.querySelector("#main"); // Capture the whole page
+  // Temporarily scale down the entire page
+  captureElement.style.transform = "scale(0.8)"; // Shrink everything
+  captureElement.style.transformOrigin = "top left"; // Ensure it scales correctly
+  captureElement.style.width = "80%"; // Adjust width to match scaling
+
+  await new Promise((resolve) => setTimeout(resolve, 500)); // Wait for UI to adjust
+
+  const canvas = await html2canvas(captureElement, {
+    scale: 2, // Capture at higher quality to prevent blurriness
+    useCORS: true,
   });
+
+  // Restore original scale
+  captureElement.style.transform = "scale(1)";
+  captureElement.style.width = "100%";
+
+  const imgData = canvas.toDataURL("image/png");
+  const pdf = new jsPDF("p", "mm", "a4");
+
+  const pdfWidth = 210;
+  const pdfHeight = 297;
+  const imgWidth = pdfWidth;
+  const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+  let position = 0;
+  while (position < imgHeight) {
+    pdf.addImage(imgData, "PNG", 0, position * -1, imgWidth, imgHeight);
+    position += pdfHeight;
+    if (position < imgHeight) {
+      pdf.addPage();
+    }
+  }
+
+  pdf.save("page.pdf");
 }
 
 onMounted(() => {
   var data = [
     {
-      x: types.value,
-      y: Object.values(JSON.parse(scores)),
+      x: Object.values(JSON.parse(scores)), // Swap x and y
+      y: types.value, // Categories on the y-axis
       type: "bar",
+      orientation: "h", // Make bars horizontal
     },
   ];
 
-  Plotly.newPlot("myChart", data);
+  var layout = {
+    title: "심리 평가 결과",
+    autosize: false, // Disable auto-resizing
+    width: 800, // Adjust width for readability
+    height: 600, // Adjust height based on the number of categories
+    margin: {
+      l: 50, // Increase left margin to prevent label cutoff
+      r: 50,
+      t: 50,
+      b: 50,
+    },
+    yaxis: {
+      automargin: true, // Ensures category labels are visible
+      tickfont: {
+        size: 30, // Increase font size for readability
+      },
+    },
+    xaxis: {
+      title: "점수",
+      titlefont: {
+        size: 30,
+      },
+    },
+    //font
+    font: {
+      size: 20,
+    },
+  };
+
+  Plotly.newPlot("myChart", data, layout);
+  Plotly.toImage("myChart", { format: "png", width: 800, height: 600 }).then(
+    (imgData) => {
+      chartImage.value = imgData;
+    }
+  );
+
+  const timer = setInterval(() => {
+    timeLeft.value -= 1;
+    if (timeLeft.value <= 0) {
+      clearInterval(timer);
+      timerFinished.value = true;
+    }
+  }, 1000);
 });
 </script>
 

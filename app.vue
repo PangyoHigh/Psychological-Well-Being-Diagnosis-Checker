@@ -6,7 +6,7 @@
 
   <v-app>
     <NuxtLayout>
-      <v-app-bar :elevation="y === 0 || drawer ? 0 : 4">
+      <v-app-bar v-if="!route.path.includes('easy')" :elevation="y === 0 || drawer ? 0 : 4">
         <NuxtLink to="/">
           <v-avatar class="ml-3">
             <v-img src="/mga.png"></v-img>
@@ -23,7 +23,7 @@
         </template>
       </v-app-bar>
 
-      <v-navigation-drawer v-model="drawer" location="end" temporary>
+      <v-navigation-drawer v-if="!route.path.includes('easy')" v-model="drawer" location="end" temporary>
         <v-list-item to="/" title="홈" prepend-icon="mdi-home"></v-list-item>
         <v-list-item
           title="커뮤니티"
@@ -99,7 +99,11 @@
       </v-navigation-drawer>
 
       <v-main>
-        <div :class="`${route.path !== '/test/easy/admin' ?? 'd-flex justify-center'}`">
+        <div
+          :class="`${
+            route.path !== '/test/easy/admin' ?? 'd-flex justify-center'
+          }`"
+        >
           <NuxtPage />
         </div>
 
@@ -115,7 +119,7 @@
           background-color: #ffeae4;
         "
       >
-        <NuxtLink to="/thanks" style="color: black; text-decoration: none;">
+        <NuxtLink to="/thanks" style="color: black; text-decoration: none">
           <div>
             {{ new Date().getFullYear() }} —
             <strong>심장박동 x 코딩인싸이트</strong>
@@ -132,6 +136,7 @@ import { useTitle } from "@vueuse/core";
 import { onAuthStateChanged } from "firebase/auth";
 
 const route = useRoute();
+const router = useRouter();
 const drawer = ref(false);
 const userInfo = ref({});
 

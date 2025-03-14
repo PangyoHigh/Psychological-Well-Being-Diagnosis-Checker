@@ -1,5 +1,13 @@
 <template>
-  <div>
+  <div class="mt-6">
+    <div style="position: fixed; top: 0; left: 0; right: 0">
+      <v-progress-linear
+        v-model="progress"
+        color="primary"
+        height="16"
+        class="mb-4"
+      ></v-progress-linear>
+    </div>
     <h1 class="text-center">마음EASY 검사</h1>
 
     <div style="display: flex; justify-content: center">
@@ -33,23 +41,13 @@
 
         <br />
 
-        <v-text-field
-          v-model="studentId"
-          placeholder="학번을 입력해주세요"
+        <v-select
+          v-model="studentGrade"
+          placeholder="학년을 입력해주세요"
           variant="outlined"
-          label="학번"
-          :rules="[
-            (v) => !!v || '학번을 입력해주세요',
-            (v) => /^[0-9]{5}$/.test(v) || '5자리 숫자로 입력해주세요',
-          ]"
-        ></v-text-field>
-        <v-text-field
-          v-model="name"
-          placeholder="이름을 입력해주세요"
-          variant="outlined"
-          label="이름"
-        ></v-text-field>
-
+          label="학년"
+          :items="['1학년', '2학년', '3학년']"
+        ></v-select>
         <v-label>성별</v-label>
         <v-radio-group v-model="gender" class="pt-3" inline>
           <v-radio label="남" value="boy"></v-radio>
@@ -66,15 +64,15 @@
 
         <v-table>
           <tr v-for="(value, key) in question" :key="key">
-            <th>{{ key }}. {{ value.question }}</th>
-            <td>
-              <v-radio-group v-model="value.answer" class="pt-3">
+            <div>
+              <th style="font-size: 17px">{{ key }}. {{ value.question }}</th>
+              <v-radio-group v-model="value.answer" class="pt-4 ml-3">
                 <v-radio label="전혀 아니다" :value="0"></v-radio>
                 <v-radio label="조금 그렇다" :value="1"></v-radio>
                 <v-radio label="그렇다" :value="2"></v-radio>
                 <v-radio label="매우 그렇다" :value="3"></v-radio>
               </v-radio-group>
-            </td>
+            </div>
           </tr>
         </v-table>
 
@@ -83,15 +81,23 @@
         <v-btn
           color="primary"
           block
+          rounded
           @click="submit"
           :disabled="
             Object.values(question).some(({ answer }) => answer === null) ||
-            !studentId ||
-            !name
+            !studentGrade ||
+            !gender
           "
         >
           제출
         </v-btn>
+        <div v-if="!studentGrade">- 학년을 입력해주세요</div>
+        <div
+          v-if="Object.values(question).some(({ answer }) => answer === null)"
+        >
+          - 모든 문항에 답해주세요
+        </div>
+        <div v-if="!gender">- 성별을 선택해주세요</div>
       </div>
     </div>
 
@@ -112,15 +118,13 @@
             >학교보건법 제7조 제6항</a
           >에 대해 학생 및 보호자(학부모)로부터 동의받은 개인정보 이용·수집과
           관련하여 실시하는 검사입니다.<br /><br />
-          - 검사결과는 학교생활기록부 또는 건강기록부에 일절 기재되지 않습니다.<br /><br />
-          - 무단으로 다른 사람의 검사에 참여하는 경우, 법적 제재를 받을 수
-          있습니다.<br /><br />
+          - 검사결과는 학교생활기록부 또는 건강기록부에 일절 기재되지
+          않습니다.<br /><br />
 
           <hr />
           <br />
 
-          - 입력한 학번, 이름과 검사결과는 관리자(선생님과 본인)와 개발자만
-          확인할 수 있습니다.<br /><br />
+          - 학년과 성별, 검사 결과 데이터만 저장합니다.<br /><br />
 
           <v-checkbox
             v-model="agreed"
@@ -135,18 +139,25 @@
     </v-dialog>
 
     <v-overlay v-model="loading" class="align-center justify-center">
-      <v-progress-circular
-        color="primary"
-        size="64"
-        width="7"
-        indeterminate
-      ></v-progress-circular>
+      <v-card class="pa-6">
+        <div>
+          <p class="text-center mb-4">잠시만 기다려 주세요...</p>
+          <div class="d-flex justify-center">
+            <v-progress-circular
+              color="primary"
+              size="64"
+              width="7"
+              indeterminate
+            ></v-progress-circular>
+          </div>
+        </div>
+      </v-card>
     </v-overlay>
   </div>
 </template>
 
 <script setup>
-import { ref as dbRef, onValue, set } from "firebase/database";
+import { ref as dbRef, onValue, set, push } from "firebase/database";
 
 const router = useRouter();
 
@@ -156,8 +167,8 @@ const gender = ref(null);
 const taa = ref(true);
 const agreed = ref(false);
 const loading = ref(false);
-const studentId = ref("");
-const name = ref("");
+const studentGrade = ref("");
+const progress = ref(0);
 const alerting = ref(true);
 const types = ref([
   "불안 및 우울 문제",
@@ -356,31 +367,41 @@ const question = ref({
   },
 });
 
+const setProgress = () => {
+  const answered = Object.values(question.value).filter(
+    ({ answer }) => answer !== null
+  ).length;
+  progress.value = (answered / Object.keys(question.value).length) * 100;
+};
+watch(question, setProgress, { deep: true });
+
 const test = () => {
   for (const key in question.value) {
-    question.value[key].answer = 3;
+    question.value[key].answer = Math.floor(Math.random() * 4);
   }
 };
 
 const saveToDatabase = (parsedDate, totalScore, link, scores) => {
   const data = {
-    studentId: studentId.value,
-    name: name.value,
+    studentGrade: studentGrade.value,
     parsedDate,
     totalScore,
     link,
     scores,
   };
   // 10822
-  const grade = data.studentId.slice(0, 1);
-  const classNumber = data.studentId.slice(1, 3);
-  const studentNumber = data.studentId.slice(3, 5);
+  const grade = data.studentGrade
 
-  const db = dbRef(
-    $db,
-    `easy/students/${grade}/${classNumber}/${studentNumber}`
-  );
-  set(db, data);
+  const db = dbRef($db, `easy/students/`);
+  push(db, data);
+
+  // save to data for statistics
+  const db2 = dbRef($db, `easy/statistics/`);
+  push(db2, {
+    grade,
+    gender: gender.value,
+    scores,
+  });
 };
 
 const submit = () => {
@@ -412,7 +433,7 @@ const submit = () => {
     gender.value
   }&totalScore=${totalScore}&scores=${JSON.stringify(
     scores
-  )}&date=${parsedDate}&studentId=${studentId.value}&name=${name.value}`;
+  )}&date=${parsedDate}&studentGrade=${studentGrade.value}`;
 
   saveToDatabase(parsedDate, totalScore, link, scores);
 
@@ -421,8 +442,7 @@ const submit = () => {
 
 onMounted(() => {
   if (process.env.NODE_ENV === "development") {
-    studentId.value = "10822";
-    name.value = "이현승";
+    studentGrade.value = "1학년";
     taa.value = false;
     agreed.value = true;
     gender.value = "boy";
