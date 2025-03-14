@@ -1,28 +1,26 @@
 <template>
   <div style="width: 100%">
-    <v-parallax
-      src="https://cdn.pixabay.com/photo/2023/02/01/21/40/pink-7761356_1280.png"
+    <div
       style="height: calc(100vh - 60px)"
+      class="section d-flex justify-center align-center"
     >
-      <div class="section d-flex justify-center align-center">
-        <v-card variant="tonal" class="text-center pa-4">
-          <v-avatar size="100" class="mb-3">
-            <v-img
-              src="/mga.png"
-              width="100"
-              class="ma-auto mb-2 mb-3"
-              :class="{ 'heart-logo': isHeartBeating }"
-              @click="toggleHeartBeat"
-            ></v-img>
-          </v-avatar>
+      <v-card variant="tonal" class="text-center pa-4">
+        <v-avatar size="100" class="mb-3">
+          <v-img
+            src="/mga.png"
+            width="100"
+            class="ma-auto mb-2 mb-3"
+            :class="{ 'heart-logo': isHeartBeating }"
+            @click="toggleHeartBeat"
+          ></v-img>
+        </v-avatar>
 
-          <div>
-            <h1 class="hero-title">마인즈</h1>
-            <p class="hero-subtitle">판교고 학생들을 위한 맞춤형 서비스</p>
-          </div>
-        </v-card>
-      </div>
-    </v-parallax>
+        <div>
+          <h1 class="hero-title">마인즈</h1>
+          <p class="hero-subtitle">판교고 학생들을 위한 맞춤형 서비스</p>
+        </div>
+      </v-card>
+    </div>
 
     <br /><br /><br />
 

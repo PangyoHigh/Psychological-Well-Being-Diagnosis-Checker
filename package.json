@@ -12,6 +12,7 @@
   "dependencies": {
     "@vite-pwa/nuxt": "^0.9.1",
     "@vueuse/core": "^10.11.0",
+    "bottom-navigation-vue": "^3.3.5",
     "firebase": "^10.12.3",
     "nuxt": "^3.12.3",
     "survey-vue3-ui": "^1.11.5",
