@@ -1,5 +1,5 @@
 <template>
-  <div style="width: 100%" class="mx-4">
+  <div class="mx-4">
     <div v-if="mypersonality.length > 0">
       <div class="section-title">당신의 성격 유형</div>
       <p>

@@ -1,5 +1,5 @@
 <template>
-  <div style="width: 100%" class="mx-4">
+  <div class="mx-4">
     <h1>고민 나누기</h1>
 
     <br />

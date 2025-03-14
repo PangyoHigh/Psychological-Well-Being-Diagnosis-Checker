@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev --port 2000",
+    "dev": "nuxt dev --port 2001",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
@@ -12,11 +12,14 @@
   "dependencies": {
     "@vite-pwa/nuxt": "^0.9.1",
     "@vueuse/core": "^10.11.0",
-    "bottom-navigation-vue": "^3.3.5",
+    "chartjs": "^0.3.24",
     "firebase": "^10.12.3",
+    "html2pdf.js": "^0.10.2",
+    "jspdf": "^2.5.1",
     "nuxt": "^3.12.3",
+    "plotly.js-dist-min": "^2.35.0",
     "survey-vue3-ui": "^1.11.5",
-    "vue": "latest",
+    "vue": "^3.5.4",
     "vuetify-nuxt-module": "^0.14.1"
   },
   "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"

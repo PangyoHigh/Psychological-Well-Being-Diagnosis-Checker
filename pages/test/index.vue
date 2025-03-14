@@ -1,5 +1,5 @@
 <template>
-  <div style="width: 100%" class="mx-4">
+  <div class="mx-4">
     <h1 class="text-center mt-2">심리검사</h1>
 
     <br />

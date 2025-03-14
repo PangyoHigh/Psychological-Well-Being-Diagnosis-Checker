@@ -1,5 +1,5 @@
 <template>
-  <div style="width: 100%" class="mx-4">
+  <div class="mx-4">
     <div class="my-3">
       <v-card v-if="content?.anonymous" elevation="0">
         <v-card-subtitle>

@@ -1,5 +1,5 @@
 <template>
-  <div style="width: 100%" class="mx-4">
+  <div class="mx-4">
     <h1 class="my-3 text-center">로그인하기</h1>
 
     <v-btn variant="outlined" block @click="login">

@@ -3,7 +3,7 @@ export default defineNuxtConfig({
   compatibilityDate: "2024-04-03",
   modules: ["vuetify-nuxt-module", "@vite-pwa/nuxt"],
   css: ["~/styles/heart.css"],
-
+  ssr: false,
   app: {
     pageTransition: { name: "page", mode: "out-in" },
   },
