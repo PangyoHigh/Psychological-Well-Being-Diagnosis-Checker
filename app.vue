@@ -99,19 +99,15 @@
       </v-navigation-drawer>
 
       <v-main>
-        <div
-          :class="`${
-            route.path !== '/test/easy/admin' ?? 'd-flex justify-center'
-          }`"
-        >
+        <div :class="`${route.path !== '/test/easy/admin' ?? 'd-flex justify-center'}`">
           <NuxtPage />
         </div>
 
         <br /><br /><br />
-        <br /><br /><br />
       </v-main>
 
       <v-footer
+        v-if="route.path === '/'"
         style="
           position: absolute;
           bottom: 0;
@@ -119,10 +115,10 @@
           background-color: #ffeae4;
         "
       >
-        <NuxtLink to="/thanks" style="color: black; text-decoration: none">
+        <NuxtLink to="/thanks" style="color: black; text-decoration: none;">
           <div>
             {{ new Date().getFullYear() }} —
-            <strong>심장박동 & 코딩인싸이트</strong>
+            <strong>심장박동 x 코딩인싸이트</strong>
           </div>
         </NuxtLink>
       </v-footer>
