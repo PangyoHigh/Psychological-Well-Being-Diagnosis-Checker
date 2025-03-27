@@ -10,7 +10,7 @@
     </div>
     <h1 class="text-center">마음EASY 검사</h1>
 
-    <div style="display: flex; justify-content: center">
+    <div v-show="agreed" style="display: flex; justify-content: center">
       <div style="max-width: 650px" class="text-justify mx-4">
         <div
           v-if="alerting"
@@ -91,13 +91,32 @@
         >
           제출
         </v-btn>
-        <div v-if="!studentGrade">- 학년을 입력해주세요</div>
-        <div
-          v-if="Object.values(question).some(({ answer }) => answer === null)"
-        >
-          - 모든 문항에 답해주세요
+
+        <div class="mt-2 ml-3 text-red">
+          <div v-if="!studentGrade">- 학년을 입력해주세요</div>
+          <div
+            v-if="Object.values(question).some(({ answer }) => answer === null)"
+          >
+            - 모든 문항에 답해주세요
+
+            <div
+              v-if="
+                unansweredQuestions.length > 0 &&
+                unansweredQuestions.length < Object.values(question).length - 9
+              "
+              class="mt-4"
+            >
+              <p class="text-red font-bold">답변하지 않은 문항:</p>
+              <ul>
+                <li v-for="(q, index) in unansweredQuestions" :key="index">
+                  {{ q }}
+                </li>
+              </ul>
+            </div>
+          </div>
+          <br />
+          <div v-if="!gender">- 성별을 선택해주세요</div>
         </div>
-        <div v-if="!gender">- 성별을 선택해주세요</div>
       </div>
     </div>
 
@@ -124,7 +143,7 @@
           <hr />
           <br />
 
-          - 학년과 성별, 검사 결과 데이터만 저장합니다.<br /><br />
+          - <mark>학년과 성별, 검사 결과 데이터</mark>만 저장합니다.<br /><br />
 
           <v-checkbox
             v-model="agreed"
@@ -157,7 +176,7 @@
 </template>
 
 <script setup>
-import { ref as dbRef, onValue, set, push } from "firebase/database";
+import { ref as dbRef, push } from "firebase/database";
 
 const router = useRouter();
 
@@ -367,6 +386,12 @@ const question = ref({
   },
 });
 
+const unansweredQuestions = computed(() => {
+  return Object.entries(question.value)
+    .filter(([_, value]) => value.answer === null)
+    .map(([key, value]) => `${key}. ${value.question}`);
+});
+
 const setProgress = () => {
   const answered = Object.values(question.value).filter(
     ({ answer }) => answer !== null
@@ -389,37 +414,35 @@ const saveToDatabase = (parsedDate, totalScore, link, scores) => {
     link,
     scores,
   };
-  // 10822
-  const grade = data.studentGrade
+
+  const grade = data.studentGrade;
+  const date = new Date();
 
   const db = dbRef($db, `easy/students/`);
   push(db, data);
 
-  // save to data for statistics
   const db2 = dbRef($db, `easy/statistics/`);
   push(db2, {
     grade,
     gender: gender.value,
     scores,
+    date: `${date.getMonth() + 1}월 ${date.getDate()}일 ${date.getHours()}시`,
   });
 };
 
 const submit = () => {
   loading.value = true;
 
-  // scores for each type
   const scores = types.value.reduce((acc, type) => {
     acc[type] = 0;
     return acc;
   }, {});
 
-  // calculate scores
   for (const key in question.value) {
     const { answer, type } = question.value[key];
     scores[type] += answer;
   }
 
-  // calculate total score
   const totalScore = Object.values(question.value).reduce(
     (acc, { answer }) => acc + answer,
     0
@@ -441,13 +464,7 @@ const submit = () => {
 };
 
 onMounted(() => {
-  if (process.env.NODE_ENV === "development") {
-    studentGrade.value = "1학년";
-    taa.value = false;
-    agreed.value = true;
-    gender.value = "boy";
-    test();
-  }
+  setProgress();
 });
 </script>
 

@@ -19,7 +19,7 @@
 
     <br />
 
-    <div id="main">
+    <div v-show="agreed" id="main">
       <v-card-title>학생 기본 정보</v-card-title>
 
       <table class="header-table">
@@ -43,23 +43,35 @@
       <br />
 
       <v-card-title>종합 점수</v-card-title>
+      <table class="mb-2">
+        <thead>
+          <tr>
+            <th>구분</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ getCategoryByTotalScore(gender, totalScore) }}</td>
+          </tr>
+        </tbody>
+      </table>
       <table>
         <thead>
           <tr>
             <th colspan="2">종합 점수</th>
             <th>T점수</th>
             <th>백분위</th>
-            <th>구분</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td colspan="2">{{ totalScore }}</td>
-            <td>{{ convertScoreToTScore("종합점수", gender, totalScore) }}</td>
+            <td colspan="2">{{ totalScore }}점</td>
             <td>
-              {{ convertScoreToPercentage("종합점수", gender, totalScore) }}
+              {{ convertScoreToTScore("종합점수", gender, totalScore) }}점
             </td>
-            <td>{{ getCategoryByTotalScore(gender, totalScore) }}</td>
+            <td>
+              {{ convertScoreToPercentage("종합점수", gender, totalScore) }}%
+            </td>
           </tr>
           <tr>
             <td colspan="5" class="text-left text-justify">
@@ -90,20 +102,29 @@
               '학교생활적응 문제',
             ]"
             :key="scoreKey"
+            class="mb-4"
           >
-            <tr>
-              <td>{{ scoreKey }}</td>
-              <td>
-                {{
-                  categoryByTScore(
-                    convertScoreToTScore(
-                      scoreKey,
-                      gender,
-                      JSON.parse(scores)[scoreKey]
-                    )
-                  )
-                }}
+            <tr style="background-color: #f2f2f2; font-size: 18px;">
+              <td colspan="2">
+                <b>{{ scoreKey }}</b>
               </td>
+              <td>
+                <b>
+                  {{
+                    categoryByTScore(
+                      convertScoreToTScore(
+                        scoreKey,
+                        gender,
+                        JSON.parse(scores)[scoreKey]
+                      )
+                    )
+                  }}
+                </b>
+              </td>
+            </tr>
+
+            <tr>
+              <td>{{ JSON.parse(scores)[scoreKey] }}점 (점수)</td>
               <td>
                 {{
                   convertScoreToTScore(
@@ -111,7 +132,7 @@
                     gender,
                     JSON.parse(scores)[scoreKey]
                   )
-                }}
+                }}점 (T점수)
               </td>
               <td>
                 {{
@@ -120,10 +141,10 @@
                     gender,
                     JSON.parse(scores)[scoreKey]
                   )
-                }}
+                }}% (백분위)
               </td>
             </tr>
-            <tr>
+            <tr style="font-size: 1rem">
               <td colspan="4" class="text-justify">
                 <strong>해석:</strong>
                 {{
@@ -148,9 +169,15 @@
       <v-card>
         <div
           class="text-justify ma-5 pa-6 rounded-lg"
-          style="border: 1px solid black"
+          style="border: 1px solid black; font-size: 18px"
         >
-          - 우선관심군이 나오면 상담받아야 합니다. ...
+          - 검사결과 <span style="color: red">(우선)관심군</span>인 경우
+          <span style="color: blue">전문가의 치료적 도움과 평가</span>를 받기를
+          강력하게 권유합니다.<br /><br />
+          - 판교고 <span style="color: blue">1층 위(Wee) 클래스 상담실</span>에
+          방문하시면,
+          <span style="color: blue">보다 정확한 검사와 전문적인 도움</span>을
+          받을 수 있습니다.
 
           <br />
           <br />
@@ -175,6 +202,11 @@
         </div>
       </v-card>
     </v-dialog>
+
+    <div style="color: blue; font-size: 18px" class="mt-3">
+      판교고 1층 위(Wee) 클래스 상담실에 방문하시면, 보다 정확한 검사와 전문적인
+      도움을 받을 수 있습니다.
+    </div>
   </div>
 </template>
 
@@ -185,7 +217,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 const route = useRoute();
-const { gender, totalScore, scores, date, studentGrade, name } = route.query;
+const { gender, totalScore, scores, date, studentGrade } = route.query;
 const taa = ref(true);
 const agreed = ref(false);
 const timerFinished = ref(false);
@@ -298,42 +330,41 @@ async function saveAsPdf() {
 }
 
 onMounted(() => {
+  const categories = types.value.map((scoreKey) =>
+    categoryByTScore(
+      convertScoreToTScore(scoreKey, gender, JSON.parse(scores)[scoreKey])
+    )
+  );
+
+  const colors = categories.map((category) => {
+    if (category === "일반군") return "#4CAF50"; // Green
+    if (category === "관심군") return "#FFC107"; // Amber/Yellow
+    if (category === "우선관심군") return "#F44336"; // Red
+    return "#90A4AE"; // Default grey fallback
+  });
+
   var data = [
     {
-      x: Object.values(JSON.parse(scores)), // Swap x and y
-      y: types.value, // Categories on the y-axis
+      x: types.value.map((scoreKey) =>
+        convertScoreToTScore(scoreKey, gender, JSON.parse(scores)[scoreKey])
+      ),
+      y: types.value.map((scoreKey) => scoreKey.replace(" 문제", "")),
       type: "bar",
-      orientation: "h", // Make bars horizontal
+      orientation: "h",
+      marker: {
+        color: colors,
+      },
     },
   ];
 
   var layout = {
     title: "심리 평가 결과",
-    autosize: false, // Disable auto-resizing
-    width: 800, // Adjust width for readability
-    height: 600, // Adjust height based on the number of categories
-    margin: {
-      l: 50, // Increase left margin to prevent label cutoff
-      r: 50,
-      t: 50,
-      b: 50,
-    },
-    yaxis: {
-      automargin: true, // Ensures category labels are visible
-      tickfont: {
-        size: 30, // Increase font size for readability
-      },
-    },
-    xaxis: {
-      title: "점수",
-      titlefont: {
-        size: 30,
-      },
-    },
-    //font
-    font: {
-      size: 20,
-    },
+    autosize: false,
+    width: 800,
+    height: 900,
+    margin: { l: 50, r: 50, t: 50, b: 50 },
+    yaxis: { automargin: true, tickfont: { size: 35 } },
+    font: { size: 24 },
   };
 
   Plotly.newPlot("myChart", data, layout);
@@ -343,11 +374,11 @@ onMounted(() => {
     }
   );
 
-  const timer = setInterval(() => {
+  const interval = setInterval(() => {
     timeLeft.value -= 1;
-    if (timeLeft.value <= 0) {
-      clearInterval(timer);
+    if (timeLeft.value === 0) {
       timerFinished.value = true;
+      clearInterval(interval);
     }
   }, 1000);
 });

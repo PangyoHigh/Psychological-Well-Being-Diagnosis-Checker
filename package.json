@@ -13,6 +13,7 @@
     "@vite-pwa/nuxt": "^0.9.1",
     "@vueuse/core": "^10.11.0",
     "chartjs": "^0.3.24",
+    "disable-devtool": "^0.3.8",
     "firebase": "^10.12.3",
     "html2pdf.js": "^0.10.2",
     "jspdf": "^2.5.1",

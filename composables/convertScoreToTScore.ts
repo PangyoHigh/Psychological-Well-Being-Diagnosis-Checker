@@ -2,30 +2,24 @@ interface DataRange {
   [key: string]: string;
 }
 
-const getTScore = (
-  data: DataRange | undefined,
+const calculateTScore = (
+  data: DataRange,
   score: number
 ): number | undefined => {
-  if (!data) {
-    return undefined;
-  }
-
   for (const key in data) {
     const [min, max] = key.split("-").map(Number);
-
-    if (score == min && score == max) {
-      const [start, end] = data[key].split("-").map(Number);
-      return start;
-    }
+    const [start, end] = data[key].split("-").map(Number);
 
     if (score >= min && score <= max) {
-      const [start, end] = data[key].split("-").map(Number);
-
-      const percentage = (score - min) / (max - min);
-      return Math.round((start + percentage * (end - start)) * 100) / 100;
+      if (min === max || start === end) {
+        return start;
+      }
+      const ratio = (score - min) / (max - min);
+      const tScore = start + ratio * (end - start);
+      return Math.round(tScore);
     }
   }
-  return undefined; // Return undefined if no matching range is found
+  return null;
 };
 
 const scoreData: { [key: string]: DataRange } = {
@@ -210,13 +204,42 @@ const scoreData: { [key: string]: DataRange } = {
     },
   },
 };
+const approximateMeanSD = (
+  min: number,
+  max: number,
+  tMin: number,
+  tMax: number
+) => {
+  const meanRaw = (min + max) / 2;
+  const meanT = (tMin + tMax) / 2;
+
+  const sdRaw = ((max - min) / (tMax - tMin)) * 10; // since 10 is the standard T-score SD
+
+  return { meanRaw, meanT, sdRaw };
+};
 
 export default function convertScoreToTScore(
   type: string,
-  gender: string,
-  score: number
-): number | undefined {
+  gender: "boy" | "girl",
+  rawScore: number
+): number | null {
   const data = scoreData[type]?.[gender];
-  const tScore = getTScore(data, Number(score));
-  return tScore;
+  if (!data) return null;
+
+  for (const range in data) {
+    const [min, max] = range.split("-").map(Number);
+    const [tMin, tMax] = data[range].split("-").map(Number);
+
+    if (rawScore >= min && rawScore <= max) {
+      if (min === max || tMin === tMax) return tMin;
+
+      const { meanRaw, meanT, sdRaw } = approximateMeanSD(min, max, tMin, tMax);
+      const z = (rawScore - meanRaw) / sdRaw;
+      const tScore = meanT + z * 10;
+      
+      return Math.round(tScore);
+    }
+  }
+
+  return null;
 }
