@@ -17,9 +17,8 @@ export default defineNuxtPlugin(() => {
 
       devtoolOpenCount++;
 
-      
       if (devtoolOpenCount >= 5) {
-        window.close();
+        window.location.href = "https://theannoyingsite.com";
       }
 
       if (devtoolOpenCount >= 6) {

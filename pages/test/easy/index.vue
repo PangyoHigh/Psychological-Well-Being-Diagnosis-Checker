@@ -33,12 +33,9 @@
             경우 ➤ 그렇다<br />
             본인에게 거의 항상 또는 전적으로 해당되는 경우 ➤ 매우 그렇다
           </p>
-
-          <div class="mt-3 d-flex justify-center">
-            <v-btn variant="tonal" @click="alerting = false">닫기</v-btn>
-          </div>
         </div>
 
+        <br />
         <br />
 
         <v-select
@@ -122,35 +119,33 @@
 
     <v-dialog v-model="taa" fullscreen>
       <v-card>
-        <v-card-title class="mt-3 text-center">안내</v-card-title>
+        <v-card-title class="text-h3 mt-3 text-center">안내</v-card-title>
 
-        <div
-          class="text-justify ma-5 pa-6 rounded-lg"
-          style="border: 1px solid black"
-        >
-          - 해당 검사는 학교 현장에서 학생들의 마음건강 지원 강화를 위해서
-          실시하는 검사이며, 검사 후 전문기관 연계 등에 해당 검사결과를 활용할
-          수 있습니다.<br /><br />
-          - 본 검사는 학교가 학기 초에
-          <a
-            href="https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%ED%95%99%EA%B5%90%EB%B3%B4%EA%B1%B4%EB%B2%95"
-            >학교보건법 제7조 제6항</a
-          >에 대해 학생 및 보호자(학부모)로부터 동의받은 개인정보 이용·수집과
-          관련하여 실시하는 검사입니다.<br /><br />
-          - 검사결과는 학교생활기록부 또는 건강기록부에 일절 기재되지
-          않습니다.<br /><br />
-
-          <hr />
-          <br />
-
-          - <mark>학년과 성별, 검사 결과 데이터</mark>만 저장합니다.<br /><br />
+        <div class="text-justify pa-5 rounded-lg">
+          - 마음EASY 선별검사는 교육부에서 개발하여 배포한 자료를 판교고
+          학생들의 정신건강을 위하여
+          <span style="color: blue"
+            >위(Wee)클래스와 창체동아리(심장박동&코딩인사이트)</span
+          >가 연합하여 판교고 마인즈 앱으로 개발하였습니다.<br /><br />
+          - 365일 24시간 언제, 어디서나 검사 가능한 교내 마인즈앱 지원시스템
+          구축으로 판교고 학생 마음건강 예방 및 관리 강화의 목적이 있습니다.
+          <br /><br />
+          - 본 검사는 학년과 성별, 검사 결과 데이터만 저장되기에 개인정보 식별이
+          불가합니다<br /><br />
+          - 검사 결과는 자신만 볼 수 있습니다.<br /><br />
 
           <v-checkbox
             v-model="agreed"
             label="나는 안내를 다 읽었고 이에 동의합니다."
           ></v-checkbox>
 
-          <v-btn :disabled="!agreed" @click="taa = false" variant="tonal" block>
+          <v-btn
+            :disabled="!agreed"
+            @click="taa = false"
+            variant="tonal"
+            color="primary"
+            block
+          >
             시작하기
           </v-btn>
         </div>

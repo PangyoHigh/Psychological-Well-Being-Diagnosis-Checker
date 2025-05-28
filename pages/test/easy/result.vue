@@ -1,20 +1,26 @@
 <template>
-  <div class="mx-7">
-    <div class="d-flex justify-center">
-      <v-card variant="tonal" class="mt-5">
-        <h1 class="mt-3 mx-4">마음EASY 선별 검사 결과</h1>
+  <div class="mx-3">
+    <div>
+      <br /><br />
 
-        <br />
+      <v-card-title
+        style="
+          white-space: normal !important;
+          word-break: break-word !important;
+          width: 100%;
+        "
+      >
+        마음EASY 선별 검사 결과
+      </v-card-title>
 
-        <div class="d-flex justify-center mb-5 ga-3">
-          <v-btn variant="tonal" @click="share"
-            ><v-icon>mdi-share-variant</v-icon> 공유하기</v-btn
-          >
-          <v-btn variant="tonal" @click="saveAsPdf"
-            ><v-icon>mdi-download</v-icon> 다운로드</v-btn
-          >
-        </div>
-      </v-card>
+      <div class="d-flex mb-5 ga-3">
+        <v-btn variant="tonal" @click="copylink"
+          ><v-icon start>mdi-link</v-icon> 링크 복사</v-btn
+        >
+        <v-btn variant="tonal" @click="share"
+          ><v-icon start>mdi-share-variant</v-icon> 공유하기</v-btn
+        >
+      </div>
     </div>
 
     <br />
@@ -75,6 +81,7 @@
           </tr>
           <tr>
             <td colspan="5" class="text-left text-justify">
+              <strong>해석:</strong>
               {{
                 reading["종합점수"][getCategoryByTotalScore(gender, totalScore)]
               }}
@@ -104,7 +111,7 @@
             :key="scoreKey"
             class="mb-4"
           >
-            <tr style="background-color: #f2f2f2; font-size: 18px;">
+            <tr style="background-color: #f2f2f2; font-size: 18px">
               <td colspan="2">
                 <b>{{ scoreKey }}</b>
               </td>
@@ -167,15 +174,15 @@
 
     <v-dialog v-model="taa" fullscreen>
       <v-card>
-        <div
-          class="text-justify ma-5 pa-6 rounded-lg"
-          style="border: 1px solid black; font-size: 18px"
-        >
-          - 검사결과 <span style="color: red">(우선)관심군</span>인 경우
+        <p class="text-h3 mt-3 text-center">안내</p>
+
+        <div class="text-justify pa-5 rounded-lg">
+          - 만일 검사결과 <span style="color: red">(우선)관심군</span>인 경우
           <span style="color: blue">전문가의 치료적 도움과 평가</span>를 받기를
           강력하게 권유합니다.<br /><br />
-          - 판교고 <span style="color: blue">1층 위(Wee) 클래스 상담실</span>에
-          방문하시면,
+          - 판교고
+          <span style="color: blue">본관 1층 위(Wee) 클래스 상담실</span
+          >(739-7784)에 방문하시면,
           <span style="color: blue">보다 정확한 검사와 전문적인 도움</span>을
           받을 수 있습니다.
 
@@ -197,24 +204,26 @@
             variant="tonal"
             block
           >
-            시작하기
+            결과 보기
           </v-btn>
         </div>
       </v-card>
     </v-dialog>
 
     <div style="color: blue; font-size: 18px" class="mt-3">
-      판교고 1층 위(Wee) 클래스 상담실에 방문하시면, 보다 정확한 검사와 전문적인
-      도움을 받을 수 있습니다.
+      판교고 본관 1층 위(Wee) 클래스 상담실(739-7784)에 방문하시면, 보다 정확한
+      검사와 전문적인 도움을 받을 수 있습니다.
     </div>
+
+    <v-snackbar v-model="copied">
+      링크가 복사되었습니다.
+    </v-snackbar>
   </div>
 </template>
 
 <script setup>
 import { onMounted } from "vue";
 import Plotly from "plotly.js-dist-min";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 
 const route = useRoute();
 const { gender, totalScore, scores, date, studentGrade } = route.query;
@@ -222,6 +231,7 @@ const taa = ref(true);
 const agreed = ref(false);
 const timerFinished = ref(false);
 const timeLeft = ref(5);
+const copied = ref(false);
 
 const reading = {
   종합점수: {
@@ -291,42 +301,12 @@ function share() {
   });
 }
 
-async function saveAsPdf() {
-  const captureElement = document.querySelector("#main"); // Capture the whole page
-  // Temporarily scale down the entire page
-  captureElement.style.transform = "scale(0.8)"; // Shrink everything
-  captureElement.style.transformOrigin = "top left"; // Ensure it scales correctly
-  captureElement.style.width = "80%"; // Adjust width to match scaling
-
-  await new Promise((resolve) => setTimeout(resolve, 500)); // Wait for UI to adjust
-
-  const canvas = await html2canvas(captureElement, {
-    scale: 2, // Capture at higher quality to prevent blurriness
-    useCORS: true,
+function copylink() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    copied.value = true;
+  }).catch((err) => {
+    console.error("Failed to copy: ", err);
   });
-
-  // Restore original scale
-  captureElement.style.transform = "scale(1)";
-  captureElement.style.width = "100%";
-
-  const imgData = canvas.toDataURL("image/png");
-  const pdf = new jsPDF("p", "mm", "a4");
-
-  const pdfWidth = 210;
-  const pdfHeight = 297;
-  const imgWidth = pdfWidth;
-  const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
-  let position = 0;
-  while (position < imgHeight) {
-    pdf.addImage(imgData, "PNG", 0, position * -1, imgWidth, imgHeight);
-    position += pdfHeight;
-    if (position < imgHeight) {
-      pdf.addPage();
-    }
-  }
-
-  pdf.save("page.pdf");
 }
 
 onMounted(() => {
