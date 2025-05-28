@@ -13,10 +13,15 @@
         마음EASY 선별 검사 결과
       </v-card-title>
 
-      <div class="d-flex mb-5 ga-3">
+      <div class="d-flex mb-1 ga-3">
         <v-btn variant="tonal" @click="copylink"
           ><v-icon start>mdi-link</v-icon> 링크 복사</v-btn
         >
+        <v-btn color="primary" variant="tonal" @click="sendToChatGPT">
+          <v-icon start>mdi-robot</v-icon> AI요약
+        </v-btn>
+      </div>
+      <div class="d-flex mb-5 ga-3">
         <v-btn variant="tonal" @click="share"
           ><v-icon start>mdi-share-variant</v-icon> 공유하기</v-btn
         >
@@ -47,6 +52,26 @@
 
       <br />
       <br />
+
+      <div v-if="ailoading || chatGPTResponse">
+        <div
+          class="mt-5 pa-4"
+          style="border: 1px solid #ccc; border-radius: 8px"
+        >
+          <v-card-title>ChatGPT 해석 결과</v-card-title>
+          <div style="white-space: pre-wrap">
+            <span v-if="!aiLoading">{{ chatGPTResponse }}</span>
+            <div v-if="ailoading">
+              <v-img
+                src="https://assets-v2.lottiefiles.com/a/9661e086-85b1-11ef-8d1f-c3a163d3fa51/9CZUREOVSt.gif"
+                width="100"
+              ></v-img>
+            </div>
+          </div>
+        </div>
+
+        <br /><br />
+      </div>
 
       <v-card-title>종합 점수</v-card-title>
       <table class="mb-2">
@@ -190,7 +215,7 @@
           <br />
 
           <p v-if="!timerFinished">남은 시간: {{ timeLeft }}초</p>
-          <p v-else>체크박스를 활성화할 수 있습니다.</p>
+          <p v-else>체크박스를 활성화 하시면 본인의 검사 결과를 보실 수 있습니다.</p>
 
           <v-checkbox
             v-model="agreed"
@@ -203,6 +228,7 @@
             @click="taa = false"
             variant="tonal"
             block
+            color="primary"
           >
             결과 보기
           </v-btn>
@@ -210,20 +236,78 @@
       </v-card>
     </v-dialog>
 
-    <div style="color: blue; font-size: 18px" class="mt-3">
+    <div style="color: blue; font-size: 18px" class="mt-3 text-justify">
       판교고 본관 1층 위(Wee) 클래스 상담실(739-7784)에 방문하시면, 보다 정확한
       검사와 전문적인 도움을 받을 수 있습니다.
     </div>
 
-    <v-snackbar v-model="copied">
-      링크가 복사되었습니다.
-    </v-snackbar>
+    <v-snackbar v-model="copied"> 링크가 복사되었습니다. </v-snackbar>
   </div>
 </template>
 
 <script setup>
 import { onMounted } from "vue";
 import Plotly from "plotly.js-dist-min";
+import axios from "axios";
+
+const chatGPTResponse = ref("");
+const ailoading = ref(false);
+
+async function sendToChatGPT() {
+  ailoading.value = true;
+  chatGPTResponse.value = "";
+  const prompt = `
+종합 점수: ${totalScore}
+T점수: ${convertScoreToTScore("종합점수", gender, totalScore)}
+백분위: ${convertScoreToPercentage("종합점수", gender, totalScore)}
+해석: ${reading["종합점수"][getCategoryByTotalScore(gender, totalScore)]}
+
+하위요인별 점수:
+${types.value
+  .map((key) => {
+    const raw = JSON.parse(scores)[key];
+    const tScore = convertScoreToTScore(key, gender, raw);
+    const percent = convertScoreToPercentage(key, gender, raw);
+    const interpretation = reading[key][categoryByTScore(tScore)];
+    return `- ${key}:
+  점수: ${raw}
+  T점수: ${tScore}
+  백분위: ${percent}%
+  해석: ${interpretation}`;
+  })
+  .join("\n")}
+  `;
+
+  try {
+    const res = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "gpt-4",
+        messages: [
+          {
+            role: "system",
+            content:
+              "당신은 심리검사 결과를 해석하는 정신건강 전문가입니다. 아래 학생의 검사 결과를 종합해서 분석해 주세요. 간결하고 친절한 언어로 2줄로 요약해 주세요.",
+          },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.7,
+      },
+      {
+        headers: {
+          Authorization:
+            "Bearer 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",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    chatGPTResponse.value = res.data.choices[0].message.content.trim();
+    ailoading.value = false;
+  } catch (err) {
+    chatGPTResponse.value = "ChatGPT 요청 중 오류가 발생했습니다.";
+    console.error(err);
+  }
+}
 
 const route = useRoute();
 const { gender, totalScore, scores, date, studentGrade } = route.query;
@@ -302,11 +386,14 @@ function share() {
 }
 
 function copylink() {
-  navigator.clipboard.writeText(window.location.href).then(() => {
-    copied.value = true;
-  }).catch((err) => {
-    console.error("Failed to copy: ", err);
-  });
+  navigator.clipboard
+    .writeText(window.location.href)
+    .then(() => {
+      copied.value = true;
+    })
+    .catch((err) => {
+      console.error("Failed to copy: ", err);
+    });
 }
 
 onMounted(() => {

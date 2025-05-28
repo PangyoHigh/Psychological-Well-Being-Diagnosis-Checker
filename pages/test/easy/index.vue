@@ -421,6 +421,8 @@ const saveToDatabase = (parsedDate, totalScore, link, scores) => {
     grade,
     gender: gender.value,
     scores,
+    totalScore,
+    question: question.value,
     date: `${date.getMonth() + 1}월 ${date.getDate()}일 ${date.getHours()}시`,
   });
 };
