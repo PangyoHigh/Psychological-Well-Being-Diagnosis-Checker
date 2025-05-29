@@ -117,6 +117,8 @@
       </div>
     </div>
 
+    <br /><br />
+
     <v-dialog v-model="taa" fullscreen>
       <v-card>
         <v-card-title class="text-h3 mt-3 text-center">안내</v-card-title>

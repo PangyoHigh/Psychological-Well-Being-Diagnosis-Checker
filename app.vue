@@ -106,14 +106,12 @@
         >
           <NuxtPage />
         </div>
-
-        <br /><br /><br />
       </v-main>
 
       <v-footer
         v-if="route.path === '/'"
         style="
-          position: absolute;
+          position: fixed;
           bottom: 0;
           width: 100%;
           background-color: #ffeae4;
