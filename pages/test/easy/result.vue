@@ -147,7 +147,7 @@
                       convertScoreToTScore(
                         scoreKey,
                         gender,
-                        JSON.parse(scores)[scoreKey]
+                        scores[scoreKey]
                       )
                     )
                   }}
@@ -156,13 +156,13 @@
             </tr>
 
             <tr>
-              <td>{{ JSON.parse(scores)[scoreKey] }}점 (점수)</td>
+              <td>{{ scores[scoreKey] }}점 (점수)</td>
               <td>
                 {{
                   convertScoreToTScore(
                     scoreKey,
                     gender,
-                    JSON.parse(scores)[scoreKey]
+                    scores[scoreKey]
                   )
                 }}점 (T점수)
               </td>
@@ -171,7 +171,7 @@
                   convertScoreToPercentage(
                     scoreKey,
                     gender,
-                    JSON.parse(scores)[scoreKey]
+                    scores[scoreKey]
                   )
                 }}% (백분위)
               </td>
@@ -185,7 +185,7 @@
                       convertScoreToTScore(
                         scoreKey,
                         gender,
-                        JSON.parse(scores)[scoreKey]
+                        scores[scoreKey]
                       )
                     )
                   ]
@@ -310,7 +310,8 @@ ${types.value
 }
 
 const route = useRoute();
-const { gender, totalScore, scores, date, studentGrade } = route.query;
+const encodedData = route.query.data;
+const { gender, totalScore, scores, date, studentGrade } = JSON.parse(decodeURIComponent(atob(encodedData)));
 const taa = ref(true);
 const agreed = ref(false);
 const timerFinished = ref(false);
@@ -399,7 +400,7 @@ function copylink() {
 onMounted(() => {
   const categories = types.value.map((scoreKey) =>
     categoryByTScore(
-      convertScoreToTScore(scoreKey, gender, JSON.parse(scores)[scoreKey])
+      convertScoreToTScore(scoreKey, gender, scores[scoreKey])
     )
   );
 
@@ -413,7 +414,7 @@ onMounted(() => {
   var data = [
     {
       x: types.value.map((scoreKey) =>
-        convertScoreToTScore(scoreKey, gender, JSON.parse(scores)[scoreKey])
+        convertScoreToTScore(scoreKey, gender, scores[scoreKey])
       ),
       y: types.value.map((scoreKey) => scoreKey.replace(" 문제", "")),
       type: "bar",

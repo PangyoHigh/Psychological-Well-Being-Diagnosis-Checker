@@ -459,7 +459,16 @@ const submit = () => {
 
   saveToDatabase(parsedDate, totalScore, link, scores);
 
-  router.push(link);
+  const resultData = {
+    gender: gender.value,
+    totalScore,
+    scores,
+    date: parsedDate,
+    studentGrade: studentGrade.value,
+  };
+
+  const encodedData = btoa(encodeURIComponent(JSON.stringify(resultData)));
+  router.push({ path: '/test/easy/result', query: { data: encodedData } });
 };
 
 onMounted(() => {
